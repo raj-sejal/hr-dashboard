@@ -1,103 +1,215 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import LoginPage from "./login/page"; // Assuming login page path
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import Link from "next/link";
+
+type User = {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  age: number;
+  image: string;
+  department: string;
+};
+
+const formSchema = z.object({
+  firstName: z.string().min(1),
+  lastName: z.string().min(1),
+  email: z.string().email(),
+  age: z.string().min(1),
+  department: z.string().min(1),
+});
+
+export default function HomePage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [visibleUsers, setVisibleUsers] = useState<User[]>([]);
+  const [page, setPage] = useState(1);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+
+  const fetchData = async () => {
+    const response = await axios.get("https://dummyjson.com/users?limit=100");
+    const fetchedUsers = response.data.users.map((user: any) => ({
+      ...user,
+      department: getRandomDepartment(),
+    }));
+    setUsers(fetchedUsers);
+    setVisibleUsers(fetchedUsers.slice(0, page * 12));
+  };
+
+  useEffect(() => {
+    if (loggedIn) fetchData();
+  }, [loggedIn, page]);
+
+  const getRandomDepartment = (): string => {
+    const departments = ["Engineering", "Marketing", "Sales", "HR", "Finance"];
+    return departments[Math.floor(Math.random() * departments.length)];
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit = (data: any) => {
+    const newUser: User = {
+      id: users.length + 1,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      age: parseInt(data.age),
+      image: "https://via.placeholder.com/150",
+      department: data.department,
+    };
+    const updatedUsers = [newUser, ...users];
+    setUsers(updatedUsers);
+    setVisibleUsers(updatedUsers.slice(0, page * 12));
+    reset();
+    setShowModal(false);
+  };
+
+  if (!loggedIn) {
+    return <LoginPage onLogin={() => setLoggedIn(true)} />;
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="container py-10">
+      <div className="flex justify-between items-center mb-10">
+        <h1 className="text-4xl font-extrabold text-indigo-900">
+          HR Performance Dashboard
+        </h1>
+        <button
+          onClick={() => setShowModal(true)}
+          className="btn btn-success"
+        >
+          Create User
+        </button>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      {/* User Cards */}
+      <motion.div layout className="responsive-grid mb-10">
+        {visibleUsers.map((user) => (
+          <motion.div
+            key={user.id}
+            layout
+            className="card text-center"
+            whileHover={{ scale: 1.05 }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <img
+              src={user.image}
+              alt={user.firstName}
+              className="w-28 h-28 rounded-full mx-auto mb-6 object-cover border-4 border-indigo-500 shadow-md"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <h2 className="text-2xl font-semibold mb-1">
+              {user.firstName} {user.lastName}
+            </h2>
+            <p className="text-indigo-700 font-semibold mb-2">{user.department}</p>
+            <p className="text-gray-600 mb-1">{user.email}</p>
+            <p className="text-gray-600 mb-4">Age: {user.age}</p>
+
+            <div className="flex justify-center gap-4">
+              <Link href={`/employee/${user.id}`}>
+                <button className="btn btn-primary">View</button>
+              </Link>
+              <button className="btn btn-success">Bookmark</button>
+              <button className="btn btn-secondary">Promote</button>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Load More Button */}
+      {visibleUsers.length < users.length && (
+        <div className="flex justify-center">
+          <button
+            onClick={() => setPage((p) => p + 1)}
+            className="btn btn-primary px-10"
           >
-            Read our docs
-          </a>
+            Load More
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
+
+      {/* Create User Modal */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2 className="text-3xl mb-6 text-indigo-900 font-extrabold">
+              Create User
+            </h2>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              <input
+                {...register("firstName")}
+                placeholder="First Name"
+                className="p-3 border rounded-lg w-full"
+              />
+              {errors.firstName && (
+                <p className="text-red-600 text-sm">First name is required</p>
+              )}
+
+              <input
+                {...register("lastName")}
+                placeholder="Last Name"
+                className="p-3 border rounded-lg w-full"
+              />
+              {errors.lastName && (
+                <p className="text-red-600 text-sm">Last name is required</p>
+              )}
+
+              <input
+                {...register("email")}
+                placeholder="Email"
+                className="p-3 border rounded-lg w-full"
+              />
+              {errors.email && (
+                <p className="text-red-600 text-sm">Invalid email</p>
+              )}
+
+              <input
+                {...register("age")}
+                placeholder="Age"
+                className="p-3 border rounded-lg w-full"
+              />
+              {errors.age && (
+                <p className="text-red-600 text-sm">Age is required</p>
+              )}
+
+              <input
+                {...register("department")}
+                placeholder="Department"
+                className="p-3 border rounded-lg w-full"
+              />
+              {errors.department && (
+                <p className="text-red-600 text-sm">Department is required</p>
+              )}
+
+              <div className="flex justify-end gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="btn btn-secondary"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-success">
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
