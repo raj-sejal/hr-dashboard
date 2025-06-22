@@ -1,77 +1,39 @@
- "use client";
-import React, { useState } from "react";
+"use client";
 
-export default function LoginPage({ onLogin }: { onLogin: () => void }) {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+// ✅ Add this props type:
+type LoginProps = {
+  onLogin: () => void;
+};
+
+export default function Login({ onLogin }: LoginProps) {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username && password) {
-      onLogin();
-    } else {
-      alert("Please enter username and password.");
+    if (username.trim()) {
+      onLogin(); // ✅ Call parent state update
+      router.push("/");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-700 via-purple-700 to-pink-500 flex justify-center items-center">
-      <div className="bg-white rounded-3xl shadow-2xl p-10 w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="bg-indigo-600 rounded-full p-4">
-            <span className="text-white text-3xl font-bold">HR</span>
-          </div>
-        </div>
-
-        <h2 className="text-3xl font-extrabold text-center text-indigo-700 mb-4">
-          Welcome Back 👋
-        </h2>
-        <p className="text-center text-gray-500 mb-8">
-          Please login to your HR Dashboard
-        </p>
-
-        <form onSubmit={handleLogin} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username
-            </label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-150"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:bg-indigo-700 transition duration-300"
-          >
-            Login
-          </button>
-        </form>
-
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don’t have an account?{" "}
-          <span className="text-indigo-600 font-semibold cursor-pointer hover:underline">
-            Contact Admin
-          </span>
-        </p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 px-4">
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-2xl p-10 max-w-md w-full">
+        <h1 className="text-4xl font-extrabold mb-8 text-indigo-900 text-center">HR Dashboard Login</h1>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          autoFocus
+          className="mb-6 p-4 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-400 w-full text-lg"
+        />
+        <button type="submit" className="btn btn-primary w-full text-lg font-bold">Login</button>
+      </form>
     </div>
   );
 }
