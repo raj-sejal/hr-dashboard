@@ -1,99 +1,92 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import Image from "next/image";
+import "@/app/styles/Login.css"; // Import your CSS
 
-export default function AuthPage() {
-  const [isSignup, setIsSignup] = useState(false);
+export default function Login() {
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const router = useRouter();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Focus effects
+  const handleFocus = (e) => {
+    e.target.parentElement.parentElement.classList.add("focus");
+  };
 
-    if (!username.trim() || (isSignup && (!email.trim() || !password.trim()))) {
-      alert("Please fill all fields");
-      return;
+  const handleBlur = (e) => {
+    if (!e.target.value) {
+      e.target.parentElement.parentElement.classList.remove("focus");
     }
-
-    // Simulate successful login/signup
-    router.push("/");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 px-4">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-2xl shadow-2xl p-10 max-w-md w-full"
-      >
-        <h1 className="text-4xl font-extrabold mb-8 text-indigo-900 text-center">
-          {isSignup ? "Sign Up" : "Login"}
-        </h1>
-
-        {/* Username */}
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          autoFocus
-          className="mb-6 p-4 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-400 w-full text-lg"
+    <div className="container">
+      <Image
+        src="/assets/images/wave.png"
+        alt="wave"
+        className="wave"
+        width={500}
+        height={500}
+      />
+      <div className="img">
+        <Image
+          src="/assets/images/bg.svg"
+          alt="bg"
+          width={500}
+          height={500}
         />
-
-        {/* Show Email & Password only in Signup */}
-        {isSignup && (
-          <>
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mb-6 p-4 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-400 w-full text-lg"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="mb-6 p-4 border border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-400 w-full text-lg"
-            />
-          </>
-        )}
-
-        <button
-          type="submit"
-          className="btn btn-primary w-full text-lg font-bold"
+      </div>
+      <div className="login-content">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            alert("Logged In!");
+          }}
         >
-          {isSignup ? "Sign Up" : "Login"}
-        </button>
+          <Image
+            src="/assets/images/avatar.svg"
+            alt="avatar"
+            width={100}
+            height={100}
+          />
+          <h2 className="title">Welcome</h2>
 
-        <div className="mt-6 text-center text-gray-600">
-          {isSignup ? (
-            <>
-              Already have an account?{" "}
-              <button
-                type="button"
-                onClick={() => setIsSignup(false)}
-                className="text-indigo-600 font-semibold hover:underline"
-              >
-                Login
-              </button>
-            </>
-          ) : (
-            <>
-              Don't have an account?{" "}
-              <button
-                type="button"
-                onClick={() => setIsSignup(true)}
-                className="text-indigo-600 font-semibold hover:underline"
-              >
-                Sign Up
-              </button>
-            </>
-          )}
-        </div>
-      </form>
+          <div className="input-div one">
+            <div className="i">
+              <i className="fas fa-user"></i>
+            </div>
+            <div className="div">
+              <h5>Username</h5>
+              <input
+                type="text"
+                className="input"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="input-div pass">
+            <div className="i">
+              <i className="fas fa-lock"></i>
+            </div>
+            <div className="div">
+              <h5>Password</h5>
+              <input
+                type="password"
+                className="input"
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                required
+              />
+            </div>
+          </div>
+
+          <a href="#">Forgot Password?</a>
+          <input type="submit" className="btn" value="Login" />
+        </form>
+      </div>
     </div>
   );
 }

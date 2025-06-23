@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-// ✅ Add this props type:
+ 
 type LoginProps = {
   onLogin: () => void;
 };
@@ -15,7 +15,7 @@ export default function Login({ onLogin }: LoginProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (username.trim()) {
-      onLogin(); // ✅ Call parent state update
+      onLogin();  
       router.push("/");
     }
   };
